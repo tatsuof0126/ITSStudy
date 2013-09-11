@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<title>ITSStudy Demo2</title>
+	<script type="text/javascript">
+		function asyncSend(){
+			var req = new XMLHttpRequest();
+			req.onreadystatechange = function(){
+				var result = document.getElementById('registresult');
+				if(req.readyState == 4){
+					if(req.status == 200 || req.status == 201){
+						result.innerHTML = req.responseText;
+					} else {
+						result.innerHTML = "エラーが発生しました。";
+					}
+				} else {
+					result.innerHTML = "通信中・・・";
+				}
+			};
+			
+			var name = document.forms[0].name.value;
+			var age = document.forms[0].age.value;
+			var hobby = document.forms[0].hobby.value;
+			
+			req.open("post", "humen", true);
+			req.setRequestHeader("content-type","application/x-www-form-urlencoded;charset=UTF-8");
+			req.send("human[name]="+encodeURIComponent(name)+"&human[age]="+encodeURIComponent(age)
+				+"&human[hobby]="+encodeURIComponent(hobby));
+		}
+		
+		function asyncSend2(){
+			var req = new XMLHttpRequest();
+			req.onreadystatechange = function(){
+				var result = document.getElementById('searchresult');
+				if(req.readyState == 4){
+					if(req.status == 200){
+						var data = eval("("+req.responseText+")");
+						if(data.length == 0){
+							result.innerHTML = "登録はありません";
+						} else {
+							var table = document.createElement("table");
+							table.border = 1;
+							var htr = document.createElement("tr");
+							var th1 = document.createElement("th");
+							var th2 = document.createElement("th");
+							var th3 = document.createElement("th");
+							var th4 = document.createElement("th");
+							th1.innerHTML = "ID";
+							th2.innerHTML = "名前";
+							th3.innerHTML = "年齢";
+							th4.innerHTML = "趣味";
+							htr.appendChild(th1);
+							htr.appendChild(th2);
+							htr.appendChild(th3);
+							htr.appendChild(th4);
+							table.appendChild(htr);
+							
+							for(var i=0;i<data.length;i++){
+								var tr = document.createElement("tr");
+								var td1 = document.createElement("td");
+								var td2 = document.createElement("td");
+								var td3 = document.createElement("td");
+								var td4 = document.createElement("td");
+								td1.innerHTML = data[i].id;
+								td2.innerHTML = data[i].name;
+								td3.innerHTML = data[i].age;
+								td4.innerHTML = data[i].hobby;
+								tr.appendChild(td1);
+								tr.appendChild(td2);
+								tr.appendChild(td3);
+								tr.appendChild(td4);
+								table.appendChild(tr);
+							}							
+							result.replaceChild(table, result.firstChild);
+						}
+					} else {
+						result.innerHTML = "エラーが発生しました。";
+					}
+				} else {
+					result.innerHTML = "通信中・・・";
+				}
+			};
+			
+			req.open("get", "humen.json", true);
+			req.send(null);
+		}
+	</script>
+</head>
+<body>
+<h1>ITS Study Demo2</h1>
+<form>
+名前：
+<input type="text" name="name" size="10">
+<br/>
+年齢：
+<input type="text" name="age" size="3">
+<br/>
+趣味：
+<input type="text" name="hobby" size="15">
+&nbsp;&nbsp;
+<input type="button" name="submit" value="　送信　" onclick="asyncSend();">
+</form>
+<br/>
+<div id="registresult"></div>	
+<br/>
+<input type="button" name="submit" value="一覧取得" onclick="asyncSend2();">
+<br/>
+<br/>
+<div id="searchresult"></div>	
+</body>
+</html>
