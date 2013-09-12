@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<title>ITSStudy Demo3</title>
+	<script type="text/javascript">
+		function searchnowlocation(){
+			if (navigator.geolocation) {
+				document.getElementById("searchinglocation").innerHTML = "現在地を検索中．．．";
+				// 現在の位置情報を取得
+				navigator.geolocation.getCurrentPosition(
+					// 位置情報の取得に成功
+					function (pos) {
+						document.getElementById("lat").value = pos.coords.latitude;
+						document.getElementById("lon").value = pos.coords.longitude;
+						document.getElementById("searchinglocation").innerHTML = "";				
+					},
+					// 位置情報の取得に失敗
+					function (error) {
+						document.getElementById("searchinglocation").innerHTML = "位置情報の取得に失敗しました";
+					}
+				);
+			} else {
+				// そもそも位置情報が取れないブラウザの場合
+				document.getElementById("searchinglocation").innerHTML = "このブラウザでは位置情報が取得できません";
+			}
+		}
+	
+		function searchnearstations(){
+			document.getElementById("nearstations").innerHTML = "近くの駅を検索中．．．";
+			
+			var lat = document.getElementById("lat").value;
+			var lon = document.getElementById("lon").value;
+			var distance = 2000;
+				
+			var url = "http://ekitouch.herokuapp.com/nearstations?herelat="+lat+"&herelon="+lon
+					+"&distance="+distance+"&type=jsonp&callback=shownearstations";
+			
+			var scrtag = document.createElement("script");
+			scrtag.type = "text/javascript";
+			scrtag.src = url;
+			document.getElementsByTagName("body").item(0).appendChild(scrtag);
+		}
+			
+		function shownearstations(data){
+			var searchresult = document.getElementById('nearstations');
+			if(data != null && data.length == 0){
+				searchresult.innerHTML = "見つかりませんでした。";
+			} else {
+				var table = document.createElement("table");
+				table.border = 1;
+				var htr = document.createElement("tr");
+				var th1 = document.createElement("th");
+				var th2 = document.createElement("th");
+				var th3 = document.createElement("th");
+				th1.innerHTML = "名前";
+				th2.innerHTML = "距離";
+				th3.innerHTML = "　";
+				htr.appendChild(th1);
+				htr.appendChild(th2);
+				htr.appendChild(th3);
+				table.appendChild(htr);
+							
+				for(var i=0;i<data.length;i++){
+					var name = data[i].line_name+" "+data[i].station_name+"駅";
+					var distance = Math.round(data[i].distance);
+	  				var lat  = data[i].lat;
+		  			var lon  = data[i].lon;
+		  			
+					var atag = document.createElement("a");
+					atag.href = "http://maps.google.co.jp/maps?q="+lat+","+lon+"("+name+")&hl=ja&z=18";
+					atag.innerHTML = "地図";
+					atag.target = "_blank";
+					var tr = document.createElement("tr");
+					var td1 = document.createElement("td");
+					var td2 = document.createElement("td");
+					var td3 = document.createElement("td");
+					td1.innerHTML = name;
+					td2.innerHTML = distance+"ｍ";
+					td3.appendChild(atag);
+						
+					tr.appendChild(td1);
+					tr.appendChild(td2);
+					tr.appendChild(td3);
+					table.appendChild(tr);
+				}
+				searchresult.replaceChild(table, searchresult.firstChild);
+			}
+		}
+	</script>
+</head>
+<body>
+<h1>ITS Study Demo3</h1>
+  	<h2>
+  		近くの駅を検索します。
+  	</h2>
+  	
+    現在地
+  	&nbsp;&nbsp;&nbsp;<input type="button" name="search" value="現在地をセット" onclick="searchnowlocation();">
+    &nbsp;&nbsp;&nbsp;<span id="searchinglocation"></span>
+    
+    <ul id="location">
+    	<li>緯度：<input type="text" id="lat" name="lat" value="35.67974"></li>
+    	<li>経度：<input type="text" id="lon" name="lon" value="139.60451"></li>
+    </ul>
+    
+    <br />
+    
+    近くの駅（2km以内）
+    &nbsp;&nbsp;&nbsp;<input type="button" name="search" value="近くの駅を検索" onclick="searchnearstations();">
+    <ul id="nearstations">
+    </ul>
+
+</body>
+</html>
